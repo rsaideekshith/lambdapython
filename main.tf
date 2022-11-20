@@ -1,24 +1,22 @@
-provider "aws" {
-  region = "ap-south-1"
-}
 resource "aws_iam_role" "lambda_role" {
-name   = "Spacelift_Test_Lambda_Function_Role"
-assume_role_policy = <<EOF
+  name   = "sai_Role"
+   assume_role_policy = <<EOF
 {
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "lambda.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
 }
 EOF
 }
+  
 resource "aws_iam_policy" "iam_policy_for_lambda" {
  
  name         = "aws_iam_policy_for_terraform_aws_lambda_role"
@@ -36,7 +34,15 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
      ],
      "Resource": "arn:aws:logs:*:*:*",
      "Effect": "Allow"
-   }
+   },
+   {
+         "Sid": "",
+         "Effect": "Allow",
+         "Action": [
+             "sqs:*"
+         ],
+         "Resource": "*"
+     }
  ]
 }
 EOF
@@ -55,9 +61,11 @@ data "archive_file" "zip" {
  
 resource "aws_lambda_function" "terraform_lambda_func" {
 filename                       = "${data.archive_file.zip.output_path}"
-function_name                  = "Spacelift_Test_Lambda_Function"
+function_name                  = "sai"
 role                           = aws_iam_role.lambda_role.arn
 handler                        = "hello-python.lambda_handler"
 runtime                        = "python3.8"
 depends_on                     = [aws_iam_role_policy_attachment.attach_iam_policy_to_iam_role]
 }
+
+
